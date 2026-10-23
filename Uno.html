@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>아두이노 신호등 키트 | 배선과 코드</title>
+  <style>
+    :root {
+      --ink: #152238;
+      --muted: #5a687c;
+      --paper: #f6f8fc;
+      --card: #ffffff;
+      --line: #dce4ee;
+      --red: #ee4b4b;
+      --yellow: #d79800;
+      --green: #139a62;
+      --blue: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Pretendard, "Noto Sans KR", Arial, sans-serif;
+      line-height: 1.65;
+    }
+    .hero {
+      color: white;
+      background: radial-gradient(circle at 80% 15%, #315b9e 0, transparent 32%), linear-gradient(135deg, #10203c, #1e407c);
+      padding: 76px 24px 58px;
+    }
+    .wrap { width: min(1040px, 100%); margin: 0 auto; }
+    .eyebrow { margin: 0 0 10px; color: #a9c8ff; font-weight: 800; letter-spacing: .08em; font-size: .8rem; }
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 4rem); line-height: 1.12; letter-spacing: -.055em; }
+    .lead { margin: 20px 0 0; max-width: 680px; color: #d9e6fa; font-size: 1.1rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+    .chip { padding: 5px 11px; border: 1px solid #6f91ca; border-radius: 999px; color: #e4efff; font-size: .85rem; font-weight: 700; }
+    main { padding: 42px 24px 70px; }
+    .notice {
+      margin-bottom: 28px; padding: 18px 20px; border-left: 5px solid var(--yellow); border-radius: 10px;
+      background: #fff9e9; color: #664d00;
+    }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px; box-shadow: 0 8px 24px rgba(25, 48, 80, .05); }
+    .wide { grid-column: 1 / -1; }
+    h2 { margin: 0 0 8px; font-size: 1.38rem; letter-spacing: -.03em; }
+    h3 { margin: 24px 0 8px; font-size: 1rem; }
+    p { margin: 8px 0; }
+    .sub { color: var(--muted); margin-top: 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 14px; text-align: left; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-size: .84rem; }
+    .pin { font-weight: 800; white-space: nowrap; }
+    .r { color: var(--red); }.y { color: var(--yellow); }.g { color: var(--green); }.b { color: var(--blue); }
+    .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
+    .light { padding: 8px 12px; border-radius: 10px; font-weight: 800; }
+    .light.red { background: #ffeaeb; color: #b21f2d; }.light.yellow { background: #fff6d7; color: #8b6200; }.light.green { background: #e4f7ee; color: #087343; }
+    .arrow { color: #8d9bad; font-size: 1.3rem; }
+    pre { position: relative; margin: 16px 0 0; padding: 20px; overflow: auto; border-radius: 13px; background: #101827; color: #e7eefb; font: 13px/1.58 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .copy { float: right; margin: -2px 0 10px 10px; padding: 7px 10px; border: 0; border-radius: 8px; color: white; background: #334155; cursor: pointer; font-weight: 700; }
+    .copy:hover { background: #475569; }
+    ul { padding-left: 20px; }
+    li + li { margin-top: 8px; }
+    .warn { color: #a63b08; font-weight: 800; }
+    footer { color: var(--muted); text-align: center; padding: 22px; font-size: .9rem; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } .wide { grid-column: auto; } .hero { padding-top: 56px; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <p class="eyebrow">ARDUINO PROJECT NOTE</p>
+      <h1>버튼식 신호등 키트</h1>
+      <p class="lead">버튼을 누르면 빨간불에서 노란불을 거쳐 초록불로 바뀌는 아두이노 신호등 프로젝트입니다.</p>
+      <div class="chips"><span class="chip">Arduino Uno</span><span class="chip">신호등 키트</span><span class="chip">푸시 버튼</span><span class="chip">D11 · D12 · D13</span></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="notice">
+      <strong>먼저 모듈의 핀 표기를 확인하세요.</strong> 이 문서는 <code>GND / R / Y / G</code>인 <strong>4핀 신호등 모듈</strong>을 기준으로 작성했습니다. 실제 기판에 <code>5V</code> 핀이 따로 있다면 5핀형이므로, 그 핀은 아두이노 <code>5V</code>에 추가 연결해야 합니다.
+    </div>
+
+    <section class="grid">
+      <article class="card">
+        <h2>1. 동작 순서</h2>
+        <p class="sub">전원을 켜면 빨간불로 대기합니다. 버튼을 한 번 누르면 자동으로 아래 순서대로 진행됩니다.</p>
+        <div class="flow"><span class="light red">빨강 · 2초</span><span class="arrow">→</span><span class="light yellow">노랑 · 2초</span><span class="arrow">→</span><span class="light green">초록 · 유지</span></div>
+      </article>
+
+      <article class="card">
+        <h2>2. 준비물</h2>
+        <ul>
+          <li>아두이노 Uno 1개</li>
+          <li>4핀 신호등 모듈 1개</li>
+          <li>푸시 버튼 1개</li>
+          <li>점퍼선과 브레드보드</li>
+          <li>USB 케이블</li>
+        </ul>
+      </article>
+
+      <article class="card wide">
+        <h2>3. 배선 정보</h2>
+        <p class="sub">신호등 모듈의 LED와 저항은 모듈에 포함되어 있으므로 별도 LED나 저항을 추가하지 않습니다.</p>
+        <table>
+          <thead><tr><th>부품</th><th>모듈 핀</th><th>아두이노 연결 핀</th><th>역할</th></tr></thead>
+          <tbody>
+            <tr><td>신호등 모듈</td><td class="pin">GND</td><td class="pin">GND</td><td>공통 접지</td></tr>
+            <tr><td>신호등 모듈</td><td class="pin r">R</td><td class="pin r">D11</td><td>빨간 LED</td></tr>
+            <tr><td>신호등 모듈</td><td class="pin y">Y</td><td class="pin y">D12</td><td>노란 LED</td></tr>
+            <tr><td>신호등 모듈</td><td class="pin g">G</td><td class="pin g">D13</td><td>초록 LED</td></tr>
+            <tr><td>푸시 버튼</td><td>한쪽 다리</td><td class="pin b">D2</td><td>버튼 입력</td></tr>
+            <tr><td>푸시 버튼</td><td>반대쪽 다리</td><td class="pin">GND</td><td>공통 접지</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+      <article class="card wide">
+        <h2>4. 아두이노 코드</h2>
+        <p class="sub">Arduino IDE에 붙여넣고 보드와 포트를 선택한 뒤 업로드하세요.</p>
+        <button class="copy" data-copy="main-code">코드 복사</button>
+        <pre id="main-code"><code>const int RED_LED = 11;      // 신호등 모듈 R
+const int YELLOW_LED = 12;   // 신호등 모듈 Y
+const int GREEN_LED = 13;    // 신호등 모듈 G
+const int BUTTON = 2;        // 푸시 버튼
+
+void allOff() {
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(YELLOW_LED, LOW);
+  digitalWrite(GREEN_LED, LOW);
+}
+
+void setup() {
+  pinMode(RED_LED, OUTPUT);
+  pinMode(YELLOW_LED, OUTPUT);
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(BUTTON, INPUT_PULLUP);
+
+  // 시작 상태: 빨간불
+  allOff();
+  digitalWrite(RED_LED, HIGH);
+}
+
+void loop() {
+  // INPUT_PULLUP: 버튼을 누르면 LOW가 됩니다.
+  if (digitalRead(BUTTON) == LOW) {
+    delay(30); // 버튼 튐 방지
+
+    if (digitalRead(BUTTON) == LOW) {
+      // 빨강 (2초)
+      allOff();
+      digitalWrite(RED_LED, HIGH);
+      delay(2000);
+
+      // 노랑 (2초)
+      allOff();
+      digitalWrite(YELLOW_LED, HIGH);
+      delay(2000);
+
+      // 초록 (계속 켜짐)
+      allOff();
+      digitalWrite(GREEN_LED, HIGH);
+
+      // 버튼을 뗄 때까지 중복 실행을 막음
+      while (digitalRead(BUTTON) == LOW) {
+      }
+      delay(30);
+    }
+  }
+}</code></pre>
+      </article>
+
+      <article class="card">
+        <h2>5. 업로드 전 체크</h2>
+        <ul>
+          <li>Arduino IDE에서 <strong>도구 → 보드 → Arduino Uno</strong>를 선택합니다.</li>
+          <li><strong>도구 → 포트</strong>에서 연결된 COM 포트를 선택합니다.</li>
+          <li>버튼은 마주 보는 다리가 아닌, <strong>서로 다른 쪽</strong> 다리 두 개를 사용합니다.</li>
+          <li>버튼 연결은 <code>D2 ↔ 버튼 ↔ GND</code>입니다. 5V에는 연결하지 않습니다.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>6. 안 될 때 확인할 점</h2>
+        <ul>
+          <li><span class="warn">불이 전혀 안 켜질 때:</span> 모듈의 GND가 아두이노 GND에 연결됐는지 확인합니다.</li>
+          <li><span class="warn">모듈에 5V 핀이 있을 때:</span> 5핀형입니다. 모듈 5V도 아두이노 5V에 연결합니다.</li>
+          <li><span class="warn">색이 다르게 켜질 때:</span> R/Y/G 점퍼선이 각각 D11/D12/D13에 맞는지 확인합니다.</li>
+          <li><span class="warn">버튼 반응이 없을 때:</span> 버튼의 다리 방향과 D2·GND 연결을 확인합니다.</li>
+          <li><span class="warn">불이 반대로 켜질 때:</span> 모듈 방식에 따라 <code>HIGH</code>와 <code>LOW</code>를 서로 바꿔야 할 수 있습니다.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <footer>Arduino Traffic Light Kit · 프로젝트 기록 페이지</footer>
+  <script>
+    document.querySelectorAll('[data-copy]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const text = document.getElementById(button.dataset.copy).innerText;
+        await navigator.clipboard.writeText(text);
+        button.textContent = '복사 완료!';
+        setTimeout(() => button.textContent = '코드 복사', 1600);
+      });
+    });
+  </script>
+</body>
+</html>
